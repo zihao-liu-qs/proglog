@@ -21,6 +21,7 @@ import (
 	"github.com/qs-lzh/proglog/internal/server"
 )
 
+// Agent connects everything together -- including
 type Agent struct {
 	Config
 
@@ -133,7 +134,12 @@ func (a *Agent) setupLog() error {
 
 func (a *Agent) setupServer() error {
 	authorizer := auth.New(a.Config.ACLModelFile, a.Config.ACLPolicyFile)
-	serverConfig := &server.Config{CommitLog: a.log, Authorizer: authorizer}
+	serverConfig := &server.Config{
+		CommitLog:  a.log,
+		Authorizer: authorizer,
+		// a.log is of type log.DistributedLog, which satisfies the interface GetServerer
+		GetServerer: a.log,
+	}
 	var opts []grpc.ServerOption
 	if a.Config.ServerTLSConfig != nil {
 		creds := credentials.NewTLS(a.Config.ServerTLSConfig)

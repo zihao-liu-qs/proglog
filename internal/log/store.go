@@ -24,11 +24,11 @@ type store struct {
 
 // newStore creates a new *store for the given file f and returns it along with any error encountered
 func newStore(f *os.File) (*store, error) {
-	fi, err := os.Stat(f.Name())
+	fileInfo, err := os.Stat(f.Name())
 	if err != nil {
 		return nil, err
 	}
-	size := uint64(fi.Size())
+	size := uint64(fileInfo.Size())
 	return &store{
 		File: f,
 		size: size,
