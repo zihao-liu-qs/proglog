@@ -23,8 +23,10 @@ import (
 )
 
 type Config struct {
-	CommitLog   CommitLog
-	Authorizer  Authorizer
+	CommitLog  CommitLog
+	Authorizer Authorizer
+
+	// this GetServerer is usually log.DistributedLog
 	GetServerer GetServerer
 }
 
@@ -173,6 +175,7 @@ func (s *grpcServer) GetServers(ctx context.Context, req *api.GetServersRequest)
 	return &api.GetServersResponse{Servers: servers}, nil
 }
 
+// log.Distributed and server.grpcServer satisfy this interface
 type GetServerer interface {
 	GetServers() ([]*api.Server, error)
 }

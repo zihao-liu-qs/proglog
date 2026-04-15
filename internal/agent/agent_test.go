@@ -101,25 +101,20 @@ func TestAgent(t *testing.T) {
 	// wait until replication has finished
 	time.Sleep(3 * time.Second)
 
-	followerClient := client(t, agents[1], peerTLSConfig)
-	consumeResponse, err = followerClient.Consume(
+	consumeResponse, err = leaderClient.Consume(
 		context.Background(),
-		&api.ConsumeRequest{
-			Offset: produceResponse.Offset,
-		},
+		&api.ConsumeRequest{Offset: produceResponse.Offset},
 	)
 	require.NoError(t, err)
 	require.Equal(t, consumeResponse.Record.Value, []byte("foo"))
 
-	consumeResponse, err = leaderClient.Consume(
+	followerClient := client(t, agents[1], peerTLSConfig)
+	consumeResponse, err = followerClient.Consume(
 		context.Background(),
-		&api.ConsumeRequest{Offset: produceResponse.Offset + 1},
+		&api.ConsumeRequest{Offset: produceResponse.Offset},
 	)
-	require.Nil(t, consumeResponse)
-	require.Error(t, err)
-	got := grpc.Code(err)
-	want := grpc.Code(api.ErrOffsetOutOfRange{}.GRPCStatus().Err())
-	require.Equal(t, got, want)
+	require.NoError(t, err)
+	require.Equal(t, consumeResponse.Record.Value, []byte("foo"))
 }
 
 func client(t *testing.T, agent *agent.Agent, tlsConfig *tls.Config) api.LogClient {
